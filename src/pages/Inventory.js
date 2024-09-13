@@ -9,7 +9,7 @@ function Inventory() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [products, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [updatePage, setUpdatePage] = useState(true);
+  const [ setUpdatePage] = useState(true);
   const [stores, setAllStores] = useState([]);
 
   const authContext = useContext(AuthContext);
