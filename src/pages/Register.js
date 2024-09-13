@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import UploadImage from "../components/UploadImage";
 import { ImSpinner2 } from "react-icons/im"; // Spinner icon from react-icons
+import UploadImage from "../components/UploadImage";
 
 function Register() {
   const [form, setForm] = useState({
@@ -52,34 +52,26 @@ function Register() {
       setLoading(false);
     }
   };
+   const uploadImage = async (image) => {
+     const data = new FormData();
+     data.append("file", image);
+     data.append("upload_preset", "inventoryapp");
 
+     await fetch("https://api.cloudinary.com/v1_1/ddhayhptm/image/upload", {
+       method: "POST",
+       body: data,
+     })
+       .then((res) => res.json())
+       .then((data) => {
+         setForm({ ...form, imageUrl: data.url });
+        
+       })
+       .catch((error) => console.log(error));
+   };
   // Handle Form Submit
   const handleSubmit = (e) => {
     e.preventDefault();
     registerUser();
-  };
-
-  // Upload Image to Cloudinary
-  const uploadImage = async (image) => {
-    const data = new FormData();
-    data.append("file", image);
-    data.append("upload_preset", "inventoryapp");
-
-    try {
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/ddhayhptm/image/upload",
-        {
-          method: "POST",
-          body: data,
-        }
-      );
-
-      const result = await res.json();
-      setForm({ ...form, imageUrl: result.url });
-      alert("Image Successfully Uploaded");
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   return (
@@ -173,12 +165,6 @@ function Register() {
                 I Agree to Terms & Conditions
               </label>
             </div>
-
-            <div className="text-sm">
-              <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </span>
-            </div>
           </div>
 
           {error && <div className="text-red-600 text-sm mt-4">{error}</div>}
@@ -186,19 +172,17 @@ function Register() {
           <div>
             <button
               type="submit"
-              className="group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="group relative flex w-full justify-center items-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               disabled={loading}
             >
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                {loading && (
-                  <ImSpinner2
-                    className="h-5 w-5 text-white animate-spin"
-                    aria-hidden="true"
-                  />
-                )}
-              </span>
+              {loading && (
+                <ImSpinner2
+                  className="h-5 w-5 text-white animate-spin absolute"
+                  aria-hidden="true"
+                />
+              )}
               <span
-                className={`flex-1 text-center ${
+                className={`${
                   loading ? "opacity-0" : "opacity-100"
                 } transition-opacity duration-300`}
               >
@@ -207,8 +191,11 @@ function Register() {
             </button>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{" "}
-              <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                Already have an account? <Link to="/login">Sign in now</Link>
+              <span className="font-medium text-black-500">
+                Already have an account?{" "}
+                <Link className="text-blue-700" to="/login">
+                  Sign in now
+                </Link>
               </span>
             </p>
           </div>

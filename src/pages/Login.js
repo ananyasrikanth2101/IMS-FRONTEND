@@ -1,4 +1,3 @@
-// import { LockClosedIcon } from "@heroicons/react/20/solid";
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../AuthContext";
@@ -8,6 +7,7 @@ function Login() {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false); // State for managing loading animation
 
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
@@ -21,7 +21,6 @@ function Login() {
       fetch("https://ims-backend-3.onrender.com/api/login")
         .then((response) => response.json())
         .then((data) => {
-          alert("Successfully Login");
           localStorage.setItem("user", JSON.stringify(data));
           authContext.signin(data._id, () => {
             navigate("/");
@@ -29,16 +28,18 @@ function Login() {
         })
         .catch((err) => {
           alert("Wrong credentials, Try again");
-          console.log(err);
         });
-    }, 3000);
+    }, 1000);
   };
 
   const loginUser = (e) => {
+    e.preventDefault(); // Prevent default form submission
+
     // Cannot send empty data
     if (form.email === "" || form.password === "") {
       alert("To login user, enter details to proceed...");
     } else {
+      setLoading(true); // Start loading animation
       fetch("https://ims-backend-3.onrender.com/api/login", {
         method: "POST",
         headers: {
@@ -47,22 +48,20 @@ function Login() {
         body: JSON.stringify(form),
       })
         .then((result) => {
-          console.log("User login", result);
+          authCheck();
         })
         .catch((error) => {
-          console.log("Something went wrong ", error);
+          alert("An error occurred during login.");
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading animation
         });
     }
-    authCheck();
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
   };
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 h-screen  items-center place-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 h-screen items-center place-items-center">
         <div className="flex justify-center">
           <img src={require("../assets/signup.jpg")} alt="" />
         </div>
@@ -74,17 +73,10 @@ function Login() {
               alt="Your Company"
             />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Signin to your account
+              Login to your account
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or
-              <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                start your 14-day free trial
-              </span>
-            </p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {/* <input type="hidden" name="remember" defaultValue="true" /> */}
+          <form className="mt-8 space-y-6" onSubmit={loginUser}>
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="email-address" className="sr-only">
@@ -120,48 +112,45 @@ function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
-                </span>
-              </div>
-            </div>
-
             <div>
               <button
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                onClick={loginUser}
+                disabled={loading} // Disable button during loading
               >
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  {/* <LockClosedIcon
-                    className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-                    aria-hidden="true"
-                  /> */}
-                </span>
-                Sign in
+                {loading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Log in"
+                )}
               </button>
               <p className="mt-2 text-center text-sm text-gray-600">
                 Or{" "}
-                <span className="font-medium text-indigo-600 hover:text-indigo-500">
+                <span className="font-medium text-black-500">
                   Don't Have an Account, Please{" "}
-                  <Link to="/register"> Register now </Link>
+                  <Link to="/register" className="text-blue-700">
+                    Register Now
+                  
+                  </Link>
                 </span>
               </p>
             </div>
