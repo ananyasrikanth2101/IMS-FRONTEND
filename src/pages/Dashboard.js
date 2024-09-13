@@ -71,17 +71,18 @@ function Dashboard() {
   const authContext = useContext(AuthContext);
 
   // Update Chart Data
-  const updateChartData = (salesData) => {
-    setChart({
-      ...chart,
-      series: [
-        {
-          name: "Monthly Sales Amount",
-          data: [...salesData],
-        },
-      ],
-    });
-  };
+ const updateChartData = useCallback((salesData) => {
+   setChart((prevChart) => ({
+     ...prevChart,
+     series: [
+       {
+         name: "Monthly Sales Amount",
+         data: [...salesData],
+       },
+     ],
+   }));
+ }, []);
+
 
   // Memoize data-fetching functions to ensure stable references
   const fetchTotalSaleAmount = useCallback(() => {
@@ -122,7 +123,7 @@ function Dashboard() {
       .then((response) => response.json())
       .then((datas) => updateChartData(datas.salesAmount))
       .catch((err) => console.log(err));
-  }, []);
+  }, [updateChartData]);
 
   useEffect(() => {
     fetchTotalSaleAmount();
