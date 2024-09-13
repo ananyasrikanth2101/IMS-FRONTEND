@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import Chart from "react-apexcharts";
 import AuthContext from "../AuthContext";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
 export const data = {
   labels: ["Apple", "Knorr", "Shoop", "Green", "Purple", "Orange"],
   datasets: [
@@ -37,7 +38,6 @@ function Dashboard() {
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
-
   const [chart, setChart] = useState({
     options: {
       chart: {
@@ -68,6 +68,49 @@ function Dashboard() {
     ],
   });
 
+  const authContext = useContext(AuthContext);
+
+  // Memoize data-fetching functions to ensure stable references
+  const fetchTotalSaleAmount = useCallback(() => {
+    fetch(
+      `https://ims-backend-3.onrender.com/api/sales/get/${authContext.user}/totalsaleamount`
+    )
+      .then((response) => response.json())
+      .then((datas) => setSaleAmount(datas.totalSaleAmount));
+  }, [authContext.user]);
+
+  const fetchTotalPurchaseAmount = useCallback(() => {
+    fetch(
+      `https://ims-backend-3.onrender.com/api/purchase/get/${authContext.user}/totalpurchaseamount`
+    )
+      .then((response) => response.json())
+      .then((datas) => setPurchaseAmount(datas.totalPurchaseAmount));
+  }, [authContext.user]);
+
+  const fetchStoresData = useCallback(() => {
+    fetch(
+      `https://ims-backend-3.onrender.com/api/store/get/${authContext.user}`
+    )
+      .then((response) => response.json())
+      .then((datas) => setStores(datas));
+  }, [authContext.user]);
+
+  const fetchProductsData = useCallback(() => {
+    fetch(
+      `https://ims-backend-3.onrender.com/api/product/get/${authContext.user}`
+    )
+      .then((response) => response.json())
+      .then((datas) => setProducts(datas))
+      .catch((err) => console.log(err));
+  }, [authContext.user]);
+
+  const fetchMonthlySalesData = useCallback(() => {
+    fetch(`https://ims-backend-3.onrender.com/api/sales/getmonthly`)
+      .then((response) => response.json())
+      .then((datas) => updateChartData(datas.salesAmount))
+      .catch((err) => console.log(err));
+  }, []);
+
   // Update Chart Data
   const updateChartData = (salesData) => {
     setChart({
@@ -81,60 +124,19 @@ function Dashboard() {
     });
   };
 
-  const authContext = useContext(AuthContext);
-
   useEffect(() => {
     fetchTotalSaleAmount();
     fetchTotalPurchaseAmount();
     fetchStoresData();
     fetchProductsData();
     fetchMonthlySalesData();
-  }, []);
-
-  // Fetching total sales amount
-  const fetchTotalSaleAmount = () => {
-    fetch(
-      `https://ims-backend-3.onrender.com/api/sales/get/${authContext.user}/totalsaleamount`
-    )
-      .then((response) => response.json())
-      .then((datas) => setSaleAmount(datas.totalSaleAmount));
-  };
-
-  // Fetching total purchase amount
-  const fetchTotalPurchaseAmount = () => {
-    fetch(
-      `https://ims-backend-3.onrender.com/api/purchase/get/${authContext.user}/totalpurchaseamount`
-    )
-      .then((response) => response.json())
-      .then((datas) => setPurchaseAmount(datas.totalPurchaseAmount));
-  };
-
-  // Fetching all stores data
-  const fetchStoresData = () => {
-    fetch(
-      `https://ims-backend-3.onrender.com/api/store/get/${authContext.user}`
-    )
-      .then((response) => response.json())
-      .then((datas) => setStores(datas));
-  };
-
-  // Fetching Data of All Products
-  const fetchProductsData = () => {
-    fetch(
-      `https://ims-backend-3.onrender.com/api/product/get/${authContext.user}`
-    )
-      .then((response) => response.json())
-      .then((datas) => setProducts(datas))
-      .catch((err) => console.log(err));
-  };
-
-  // Fetching Monthly Sales
-  const fetchMonthlySalesData = () => {
-    fetch(`https://ims-backend-3.onrender.com/api/sales/getmonthly`)
-      .then((response) => response.json())
-      .then((datas) => updateChartData(datas.salesAmount))
-      .catch((err) => console.log(err));
-  };
+  }, [
+    fetchTotalSaleAmount,
+    fetchTotalPurchaseAmount,
+    fetchStoresData,
+    fetchProductsData,
+    fetchMonthlySalesData,
+  ]);
 
   return (
     <>
@@ -239,8 +241,6 @@ function Dashboard() {
                 {" "}
                 {products.length}{" "}
               </span>
-
-              {/* <span className="text-xs text-gray-500"> from $404.32 </span> */}
             </p>
           </div>
         </article>
@@ -274,8 +274,6 @@ function Dashboard() {
                 {" "}
                 {stores.length}{" "}
               </span>
-
-              {/* <span className="text-xs text-gray-500"> from 0 </span> */}
             </p>
           </div>
         </article>

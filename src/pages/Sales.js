@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import AddSale from "../components/AddSale";
 import AuthContext from "../AuthContext";
 
@@ -11,14 +11,8 @@ function Sales() {
 
   const authContext = useContext(AuthContext);
 
-  useEffect(() => {
-    fetchSalesData();
-    fetchProductsData();
-    fetchStoresData();
-  }, [updatePage]);
-
-  // Fetching Data of All Sales
-  const fetchSalesData = () => {
+  // Memoize fetch functions to ensure stable references
+  const fetchSalesData = useCallback(() => {
     fetch(
       `https://ims-backend-3.onrender.com/api/sales/get/${authContext.user}`
     )
@@ -27,10 +21,9 @@ function Sales() {
         setAllSalesData(data);
       })
       .catch((err) => console.log(err));
-  };
+  }, [authContext.user]);
 
-  // Fetching Data of All Products
-  const fetchProductsData = () => {
+  const fetchProductsData = useCallback(() => {
     fetch(
       `https://ims-backend-3.onrender.com/api/product/get/${authContext.user}`
     )
@@ -39,10 +32,9 @@ function Sales() {
         setAllProducts(data);
       })
       .catch((err) => console.log(err));
-  };
+  }, [authContext.user]);
 
-  // Fetching Data of All Stores
-  const fetchStoresData = () => {
+  const fetchStoresData = useCallback(() => {
     fetch(
       `https://ims-backend-3.onrender.com/api/store/get/${authContext.user}`
     )
@@ -50,7 +42,13 @@ function Sales() {
       .then((data) => {
         setAllStores(data);
       });
-  };
+  }, [authContext.user]);
+
+  useEffect(() => {
+    fetchSalesData();
+    fetchProductsData();
+    fetchStoresData();
+  }, [fetchSalesData, fetchProductsData, fetchStoresData, updatePage]);
 
   // Modal for Sale Add
   const addSaleModalSetting = () => {
@@ -85,7 +83,6 @@ function Sales() {
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs  rounded"
                 onClick={addSaleModalSetting}
               >
-                {/* <Link to="/inventory/add-product">Add Product</Link> */}
                 Add Sales
               </button>
             </div>
@@ -112,27 +109,25 @@ function Sales() {
             </thead>
 
             <tbody className="divide-y divide-gray-200">
-              {sales.map((element, index) => {
-                return (
-                  <tr key={element._id}>
-                    <td className="whitespace-nowrap px-4 py-2  text-gray-900">
-                      {element.ProductID?.name}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.StoreID?.name}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.StockSold}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.SaleDate}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      ${element.TotalSaleAmount}
-                    </td>
-                  </tr>
-                );
-              })}
+              {sales.map((element) => (
+                <tr key={element._id}>
+                  <td className="whitespace-nowrap px-4 py-2  text-gray-900">
+                    {element.ProductID?.name}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    {element.StoreID?.name}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    {element.StockSold}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    {element.SaleDate}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    ${element.TotalSaleAmount}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

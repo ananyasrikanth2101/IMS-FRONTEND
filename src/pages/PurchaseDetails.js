@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import AddPurchaseDetails from "../components/AddPurchaseDetails";
 import AuthContext from "../AuthContext";
 
@@ -10,13 +10,8 @@ function PurchaseDetails() {
 
   const authContext = useContext(AuthContext);
 
-  useEffect(() => {
-    fetchPurchaseData();
-    fetchProductsData();
-  }, [updatePage]);
-
   // Fetching Data of All Purchase items
-  const fetchPurchaseData = () => {
+  const fetchPurchaseData = useCallback(() => {
     fetch(
       `https://ims-backend-3.onrender.com/api/purchase/get/${authContext.user}`
     )
@@ -25,10 +20,10 @@ function PurchaseDetails() {
         setAllPurchaseData(data);
       })
       .catch((err) => console.log(err));
-  };
+  }, [authContext.user]);
 
   // Fetching Data of All Products
-  const fetchProductsData = () => {
+  const fetchProductsData = useCallback(() => {
     fetch(
       `https://ims-backend-3.onrender.com/api/product/get/${authContext.user}`
     )
@@ -37,21 +32,26 @@ function PurchaseDetails() {
         setAllProducts(data);
       })
       .catch((err) => console.log(err));
-  };
-
-  // Modal for Sale Add
-  const addSaleModalSetting = () => {
-    setPurchaseModal(!showPurchaseModal);
-  };
+  }, [authContext.user]);
 
   // Handle Page Update
-  const handlePageUpdate = () => {
-    setUpdatePage(!updatePage);
-  };
+  const handlePageUpdate = useCallback(() => {
+    setUpdatePage((prev) => !prev);
+  }, []);
+
+  // Modal for Sale Add
+  const addSaleModalSetting = useCallback(() => {
+    setPurchaseModal((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    fetchPurchaseData();
+    fetchProductsData();
+  }, [fetchPurchaseData, fetchProductsData, updatePage]);
 
   return (
-    <div className="col-span-12 lg:col-span-10  flex justify-center">
-      <div className=" flex flex-col gap-5 w-11/12">
+    <div className="col-span-12 lg:col-span-10 flex justify-center">
+      <div className="flex flex-col gap-5 w-11/12">
         {showPurchaseModal && (
           <AddPurchaseDetails
             addSaleModalSetting={addSaleModalSetting}
@@ -61,17 +61,16 @@ function PurchaseDetails() {
           />
         )}
         {/* Table  */}
-        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200 ">
+        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200">
           <div className="flex justify-between pt-5 pb-3 px-3">
-            <div className="flex gap-4 justify-center items-center ">
+            <div className="flex gap-4 justify-center items-center">
               <span className="font-bold">Purchase Details</span>
             </div>
             <div className="flex gap-4">
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs  rounded"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs rounded"
                 onClick={addSaleModalSetting}
               >
-                {/* <Link to="/inventory/add-product">Add Product</Link> */}
                 Add Purchase
               </button>
             </div>
@@ -95,27 +94,25 @@ function PurchaseDetails() {
             </thead>
 
             <tbody className="divide-y divide-gray-200">
-              {purchase.map((element, index) => {
-                return (
-                  <tr key={element._id}>
-                    <td className="whitespace-nowrap px-4 py-2  text-gray-900">
-                      {element.ProductID?.name}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.QuantityPurchased}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {new Date(element.PurchaseDate).toLocaleDateString() ==
-                      new Date().toLocaleDateString()
-                        ? "Today"
-                        : element.PurchaseDate}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      ${element.TotalPurchaseAmount}
-                    </td>
-                  </tr>
-                );
-              })}
+              {purchase.map((element) => (
+                <tr key={element._id}>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-900">
+                    {element.ProductID?.name}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    {element.QuantityPurchased}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    {new Date(element.PurchaseDate).toLocaleDateString() ===
+                    new Date().toLocaleDateString()
+                      ? "Today"
+                      : element.PurchaseDate}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                    ${element.TotalPurchaseAmount}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
