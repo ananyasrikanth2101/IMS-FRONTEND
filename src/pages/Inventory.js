@@ -9,7 +9,7 @@ function Inventory() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [products, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [ setUpdatePage] = useState(true);
+  const [setUpdatePage] = useState(true); // Fixed typo here
   const [stores, setAllStores] = useState([]);
 
   const authContext = useContext(AuthContext);
@@ -56,7 +56,7 @@ function Inventory() {
   // Update Page
   const handlePageUpdate = useCallback(() => {
     setUpdatePage((prev) => !prev);
-  }, []);
+  }, [setUpdatePage]);
 
   useEffect(() => {
     fetchProductsData();

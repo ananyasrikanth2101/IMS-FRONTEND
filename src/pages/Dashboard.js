@@ -70,6 +70,19 @@ function Dashboard() {
 
   const authContext = useContext(AuthContext);
 
+  // Update Chart Data
+  const updateChartData = (salesData) => {
+    setChart({
+      ...chart,
+      series: [
+        {
+          name: "Monthly Sales Amount",
+          data: [...salesData],
+        },
+      ],
+    });
+  };
+
   // Memoize data-fetching functions to ensure stable references
   const fetchTotalSaleAmount = useCallback(() => {
     fetch(
@@ -109,20 +122,7 @@ function Dashboard() {
       .then((response) => response.json())
       .then((datas) => updateChartData(datas.salesAmount))
       .catch((err) => console.log(err));
-  }, [authContext.user]);
-
-  // Update Chart Data
-  const updateChartData = (salesData) => {
-    setChart({
-      ...chart,
-      series: [
-        {
-          name: "Monthly Sales Amount",
-          data: [...salesData],
-        },
-      ],
-    });
-  };
+  }, [authContext.user, updateChartData]);
 
   useEffect(() => {
     fetchTotalSaleAmount();
@@ -211,6 +211,7 @@ function Dashboard() {
             </p>
           </div>
         </article>
+
         <article className="flex flex-col   gap-4 rounded-lg border border-gray-100 bg-white p-6 ">
           <div className="inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600">
             <svg
@@ -238,12 +239,12 @@ function Dashboard() {
 
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {products.length}{" "}
+                {products.length}
               </span>
             </p>
           </div>
         </article>
+
         <article className="flex flex-col   gap-4 rounded-lg border border-gray-100 bg-white p-6 ">
           <div className="inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600">
             <svg
@@ -271,12 +272,12 @@ function Dashboard() {
 
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {stores.length}{" "}
+                {stores.length}
               </span>
             </p>
           </div>
         </article>
+
         <div className="flex justify-around bg-white rounded-lg py-8 col-span-full justify-center">
           <div>
             <Chart
