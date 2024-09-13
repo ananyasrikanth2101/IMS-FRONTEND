@@ -122,7 +122,7 @@ function Dashboard() {
       .then((response) => response.json())
       .then((datas) => updateChartData(datas.salesAmount))
       .catch((err) => console.log(err));
-  }, [authContext.user, updateChartData]);
+  }, []);
 
   useEffect(() => {
     fetchTotalSaleAmount();
